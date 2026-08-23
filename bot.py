@@ -1,4 +1,3 @@
-bot.py
 import os
 import threading
 
@@ -40,8 +39,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     ]
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
     await update.message.reply_text(
         "👩‍🍼 Добро пожаловать в Mama Care!\n\n"
         "Это предварительный скрининг симптомов после родов.\n\n"
@@ -49,7 +46,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "недержания мочи и определить, нужна ли "
         "дополнительная консультация специалиста.\n\n"
         "⚠️ Результат не является медицинским диагнозом.",
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 
@@ -71,7 +68,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
-
     step = context.user_data.get("step")
 
     if step == "age":
@@ -100,8 +96,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "В каком году вы родили ребёнка?\n\n"
             "Введите год, например: 2025"
         )
+        return
 
-    elif step == "delivery_year":
+    if step == "delivery_year":
         if not text.isdigit():
             await update.message.reply_text(
                 "Пожалуйста, введите год числом.\n"
@@ -123,13 +120,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "Спасибо! 🌷\n\n"
             "Первые данные сохранены.\n\n"
-            "Возраст: "
-            f"{context.user_data['age']} лет\n"
+            f"Возраст: {context.user_data['age']} лет\n"
             f"Год родов: {year}\n\n"
-            "Тестовый этап анкеты завершён.\n\n"
-            "Дальше мы добавим вопросы о симптомах "
-            "недержания мочи и послеродовом состоянии."
+            "Тестовый этап анкеты завершён."
         )
+        return
+
+    await update.message.reply_text(
+        "Чтобы начать оценку, нажмите /start."
+    )
 
 
 def main():
@@ -142,7 +141,6 @@ def main():
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_click))
-
     application.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
