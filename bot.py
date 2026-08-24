@@ -30,10 +30,10 @@ def run_web_server():
 
 def keyboard(options):
     """Создаёт кнопки по одной в строке."""
-    return InlineKeyboardMarkup(
-        [[InlineKeyboardButton(text, callback_data=data)]]
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(text, callback_data=data)]
         for text, data in options
-    )
+    ])
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
