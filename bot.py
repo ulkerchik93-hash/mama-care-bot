@@ -227,6 +227,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "impact": "",
                 "treatment": "",
                 "treatment_effect": "",
+                "risk_score": 0,
                 "risk": "🟢 НИЗКИЙ"
             })
 
@@ -380,7 +381,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def show_result(query, context):
-    """Простая предварительная оценка риска."""
+    """Предварительная оценка риска Mama Care."""
 
     score = 0
 
@@ -389,8 +390,10 @@ async def show_result(query, context):
     situation = context.user_data.get("leak_situation", "")
     trauma = context.user_data.get("trauma", "")
     weight = context.user_data.get("birth_weight", 0)
+    onset = context.user_data.get("symptom_onset", "")
     effect = context.user_data.get("treatment_effect", "")
 
+    # 1. ЧАСТОТА ПОДТЕКАНИЯ
     if leakage == "leak_rare":
         score += 1
     elif leakage == "leak_sometimes":
@@ -398,6 +401,17 @@ async def show_result(query, context):
     elif leakage == "leak_often":
         score += 3
 
+    # 2. СИТУАЦИЯ ПОДТЕКАНИЯ
+    if situation == "situation_cough":
+        score += 1
+    elif situation == "situation_activity":
+        score += 2
+    elif situation == "situation_urgency":
+        score += 1
+    elif situation == "situation_mixed":
+        score += 3
+
+    # 3. ВЛИЯНИЕ НА ЖИЗНЬ
     if impact == "impact_mild":
         score += 1
     elif impact == "impact_moderate":
@@ -405,37 +419,50 @@ async def show_result(query, context):
     elif impact == "impact_severe":
         score += 3
 
-    if situation in [
-        "situation_cough",
-        "situation_activity",
-        "situation_mixed"
-    ]:
+    # 4. РАЗРЫВ / ЭПИЗИОТОМИЯ
+    if trauma == "trauma_tear":
         score += 1
-
-    if trauma in [
-        "trauma_tear",
-        "trauma_episiotomy",
-        "trauma_both"
-    ]:
+    elif trauma == "trauma_episiotomy":
         score += 1
+    elif trauma == "trauma_both":
+        score += 2
 
-    if isinstance(weight, int) and weight >= 4000:
+    # 5. ВЕС РЕБЁНКА
+    if isinstance(weight, int):
+        if weight >= 4000:
+            score += 2
+        elif weight >= 3500:
+            score += 1
+
+    # 6. КОГДА ВПЕРВЫЕ ПОЯВИЛИСЬ СИМПТОМЫ
+    if onset == "onset_last_delivery":
+        score += 2
+    elif onset == "onset_previous_delivery":
+        score += 2
+    elif onset == "onset_pregnancy":
         score += 1
+    elif onset == "onset_before":
+        score += 3
 
-    if effect in ["effect_none", "effect_worse"]:
+    # 7. ЭФФЕКТ ЛЕЧЕНИЯ
+    if effect == "effect_none":
         score += 1
+    elif effect == "effect_worse":
+        score += 3
 
+    # ИТОГОВАЯ ГРУППА
     if score <= 3:
         risk = "🟢 НИЗКИЙ"
         recommendation = (
-            "На данный момент выраженный риск по результатам "
-            "скрининга не выявлен. Наблюдайте за симптомами "
-            "и уделяйте внимание здоровью тазового дна."
+            "По результатам скрининга выявлен низкий риск. "
+            "Рекомендуется наблюдать за симптомами и уделять "
+            "внимание здоровью мышц тазового дна."
         )
 
     elif score <= 6:
         risk = "🟡 СРЕДНИЙ"
         recommendation = (
+            "По результатам скрининга выявлен средний риск. "
             "Рекомендуется плановая консультация специалиста "
             "для более подробной оценки состояния тазового дна."
         )
@@ -443,10 +470,11 @@ async def show_result(query, context):
     else:
         risk = "🔴 ВЫСОКИЙ"
         recommendation = (
-            "Рекомендуется обратиться к специалисту для "
-            "очной оценки и дополнительного обследования."
+            "По результатам скрининга выявлен высокий риск. "
+            "Рекомендуется обратиться к специалисту для очной "
+            "оценки и дополнительного обследования."
         )
-    
+
     context.user_data["risk_score"] = score
     context.user_data["completed"] = True
 
@@ -464,11 +492,13 @@ async def show_result(query, context):
         "impact": context.user_data.get("impact", ""),
         "treatment": context.user_data.get("treatment", ""),
         "treatment_effect": context.user_data.get("treatment_effect", ""),
+        "risk_score": score,
         "risk": risk
     })
 
     await query.edit_message_text(
         "🌷 Спасибо! Анкета завершена.\n\n"
+        f"Ваш результат: {score} баллов.\n\n"
         f"Результат предварительного скрининга: {risk} РИСК.\n\n"
         f"{recommendation}\n\n"
         "⚠️ Mama Care не устанавливает диагноз. "
@@ -476,7 +506,6 @@ async def show_result(query, context):
         "и не заменяет консультацию врача.\n\n"
         "Чтобы пройти оценку заново, нажмите /start."
     )
-
 
 async def handle_message(
     update: Update,
