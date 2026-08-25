@@ -65,12 +65,12 @@ def save_to_sheets(data):
             "situation_mixed": "В разных ситуациях",
 
             # Когда появились симптомы
-            "onset_immediate": "Сразу после родов",
-            "onset_month": "В течение первого месяца",
-            "onset_1_6": "Через 1–6 месяцев",
-            "onset_after_6": "Более чем через 6 месяцев",
-            "onset_before": "Были ещё до беременности",
-
+            "onset_last_delivery": "После последних родов",
+            "onset_previous_delivery": "После одних из предыдущих родов",
+            "onset_pregnancy": "Во время беременности",
+            "onset_before": "Было ещё до беременности",
+            "onset_unknown": "Не помню точно",
+            
             # Влияние на жизнь
             "impact_none": "Практически не мешают",
             "impact_mild": "Немного мешают",
@@ -281,27 +281,28 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["step"] = "symptom_onset"
 
         await query.edit_message_text(
-            "9️⃣ Когда впервые появились симптомы?",
+            "9️⃣ Когда впервые появилось непроизвольное "
+            "подтекание мочи?",
             reply_markup=keyboard([
                 (
-                    "Сразу после родов",
-                    "onset_immediate"
+                    "После последних родов",
+                    "onset_last_delivery"
                 ),
                 (
-                    "В течение первого месяца",
-                    "onset_month"
+                    "После одних из предыдущих родов",
+                    "onset_previous_delivery"
                 ),
                 (
-                    "Через 1–6 месяцев",
-                    "onset_1_6"
+                    "Во время беременности",
+                    "onset_pregnancy"
                 ),
                 (
-                    "Более чем через 6 месяцев",
-                    "onset_after_6"
-                ),
-                (
-                    "Были ещё до беременности",
+                    "Было ещё до беременности",
                     "onset_before"
+                ),
+                (
+                    "Не помню точно",
+                    "onset_unknown"
                 ),
             ])
         )
@@ -561,10 +562,10 @@ async def handle_message(
 
         context.user_data["birth_weight"] = weight
         context.user_data["step"] = "trauma"
-
+        
         await update.message.reply_text(
-            "6️⃣ Во время последних родов были ли у Вас "
-            "травмы промежности или выполнялась "
+            "6️⃣ Были ли у Вас когда-либо во время родов "
+            "разрывы промежности или выполнялась "
             "эпизиотомия (разрез)?",
             reply_markup=keyboard([
                 ("Нет", "trauma_no"),
