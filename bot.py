@@ -18,7 +18,7 @@ from telegram.ext import (
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-SHEETS_URL = "https://script.google.com/macros/s/AKfycbwKG2eYL2Mbb9pOj819Q2ub9e2Q2ZNp_FFPE8xrnqA253HoU8zALf4wXsMzjLQG8EDT/exec"
+SHEETS_URL = "https://script.google.com/macros/s/AKfycbyYRz7BlY3k1ir1Nyz2QVFFBMHZCdF8RQW0A3hcJVosvd-B2j_S9ax8Sof18mnzu6n0/exec"
 
 web_app = Flask(__name__)
 
