@@ -44,6 +44,56 @@ def save_to_sheets(data):
     try:
         import json
 
+        value_names = {
+            # Травма / эпизиотомия
+            "trauma_no": "Нет",
+            "trauma_tear": "Был разрыв",
+            "trauma_episiotomy": "Была эпизиотомия",
+            "trauma_both": "Разрыв и эпизиотомия",
+            "trauma_unknown": "Не знаю / не помню",
+
+            # Недержание мочи
+            "leak_never": "Никогда",
+            "leak_rare": "Редко",
+            "leak_sometimes": "Иногда",
+            "leak_often": "Часто",
+
+            # Ситуация подтекания
+            "situation_cough": "При кашле, чихании, смехе",
+            "situation_activity": "При физической нагрузке",
+            "situation_urgency": "При сильном внезапном позыве",
+            "situation_mixed": "В разных ситуациях",
+
+            # Когда появились симптомы
+            "onset_immediate": "Сразу после родов",
+            "onset_month": "В течение первого месяца",
+            "onset_1_6": "Через 1–6 месяцев",
+            "onset_after_6": "Более чем через 6 месяцев",
+            "onset_before": "Были ещё до беременности",
+
+            # Влияние на жизнь
+            "impact_none": "Практически не мешают",
+            "impact_mild": "Немного мешают",
+            "impact_moderate": "Заметно мешают",
+            "impact_severe": "Сильно мешают",
+
+            # Лечение
+            "treatment_no": "Нет",
+            "treatment_kegel": "Упражнения Кегеля",
+            "treatment_other": "Другое лечение",
+
+            # Эффект лечения
+            "effect_good": "Стало значительно лучше",
+            "effect_partial": "Стало немного лучше",
+            "effect_none": "Эффекта не было",
+            "effect_worse": "Стало хуже",
+        }
+
+        data = {
+            key: value_names.get(value, value)
+            for key, value in data.items()
+        }
+
         body = json.dumps(data).encode("utf-8")
 
         request = urllib.request.Request(
