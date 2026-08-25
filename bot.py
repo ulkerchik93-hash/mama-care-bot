@@ -120,9 +120,14 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # СПОСОБ РОДОВ
+     # СПОСОБ РОДОВ
     if data.startswith("delivery_"):
-        context.user_data["delivery_method"] = data
+        delivery_names = {
+            "delivery_vaginal": "Естественные роды",
+            "delivery_cesarean": "Кесарево сечение",
+            "delivery_instrumental": "Вакуум / щипцы",
+        }
+        context.user_data["delivery_method"] = delivery_names.get(data, data)
 
         context.user_data["step"] = "birth_weight"
 
@@ -132,7 +137,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ТРАВМА / ЭПИЗИОТОМИЯ
+         # ТРАВМА / ЭПИЗИОТОМИЯ
     if data.startswith("trauma_"):
         context.user_data["trauma"] = data
 
