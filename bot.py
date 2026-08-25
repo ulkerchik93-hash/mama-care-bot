@@ -1,5 +1,7 @@
 import os
 import threading
+import urllib.request
+import uuid
 from flask import Flask
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -15,8 +17,9 @@ from telegram.ext import (
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-web_app = Flask(__name__)
+SHEETS_URL = "https://script.google.com/macros/s/AKfycbyeHeSge0G6V2PSUBh4Ln8rlbCTOy4oGhq0n_0Xx8W4wZBgCR1zMr7vt9T7xvXKZ8N2/exec"
 
+web_app = Flask(__name__)
 
 @web_app.get("/")
 def home():
@@ -26,7 +29,7 @@ def home():
 def run_web_server():
     port = int(os.getenv("PORT", "10000"))
     web_app.run(host="0.0.0.0", port=port)
-
+    
 
 def keyboard(options):
     """Создаёт кнопки по одной в строке."""
@@ -34,6 +37,29 @@ def keyboard(options):
         [InlineKeyboardButton(text, callback_data=data)]
         for text, data in options
     ])
+
+
+def save_to_sheets(data):
+    """Отправляет результаты анкеты в Google Sheets."""
+    try:
+        import json
+
+        body = json.dumps(data).encode("utf-8")
+
+        request = urllib.request.Request(
+            SHEETS_URL,
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+
+        with urllib.request.urlopen(request, timeout=10) as response:
+            response.read()
+
+        print("Данные успешно сохранены в Google Sheets")
+
+    except Exception as error:
+        print(f"Ошибка сохранения в Google Sheets: {error}")
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -128,9 +154,26 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("leak_"):
         context.user_data["leakage"] = data
 
-        # ЕСЛИ НИКОГДА — СРАЗУ РЕЗУЛЬТАТ
+          # ЕСЛИ НИКОГДА — СРАЗУ РЕЗУЛЬТАТ
         if data == "leak_never":
             context.user_data["completed"] = True
+            
+            save_to_sheets({
+                "id": f"MC-{uuid.uuid4().hex[:8].upper()}",
+                "age": context.user_data.get("age", ""),
+                "delivery_year": context.user_data.get("delivery_year", ""),
+                "births": context.user_data.get("births", ""),
+                "delivery_method": context.user_data.get("delivery_method", ""),
+                "birth_weight": context.user_data.get("birth_weight", ""),
+                "trauma": context.user_data.get("trauma", ""),
+                "leakage": context.user_data.get("leakage", ""),
+                "leak_situation": "",
+                "symptom_onset": "",
+                "impact": "",
+                "treatment": "",
+                "treatment_effect": "",
+                "risk": "🟢 НИЗКИЙ"
+            })
 
             await query.edit_message_text(
                 "🌷 Спасибо! Оценка завершена.\n\n"
@@ -347,9 +390,26 @@ async def show_result(query, context):
             "Рекомендуется обратиться к специалисту для "
             "очной оценки и дополнительного обследования."
         )
-
+    
     context.user_data["risk_score"] = score
     context.user_data["completed"] = True
+
+    save_to_sheets({
+        "id": f"MC-{uuid.uuid4().hex[:8].upper()}",
+        "age": context.user_data.get("age", ""),
+        "delivery_year": context.user_data.get("delivery_year", ""),
+        "births": context.user_data.get("births", ""),
+        "delivery_method": context.user_data.get("delivery_method", ""),
+        "birth_weight": context.user_data.get("birth_weight", ""),
+        "trauma": context.user_data.get("trauma", ""),
+        "leakage": context.user_data.get("leakage", ""),
+        "leak_situation": context.user_data.get("leak_situation", ""),
+        "symptom_onset": context.user_data.get("symptom_onset", ""),
+        "impact": context.user_data.get("impact", ""),
+        "treatment": context.user_data.get("treatment", ""),
+        "treatment_effect": context.user_data.get("treatment_effect", ""),
+        "risk": risk
+    })
 
     await query.edit_message_text(
         "🌷 Спасибо! Анкета завершена.\n\n"
