@@ -2,9 +2,11 @@ import os
 import threading
 import urllib.request
 import uuid
+
 from flask import Flask
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.error import BadRequest
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -13,7 +15,6 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
-
 
 TOKEN = os.getenv("BOT_TOKEN")
 
@@ -620,6 +621,17 @@ async def handle_message(
     )
 
 
+
+async def error_handler(update, context):
+    error = context.error
+
+    if isinstance(error, BadRequest) and "Message is not modified" in str(error):
+        print("Повторное нажатие кнопки — пропускаем.")
+        return
+
+    print(f"Ошибка Telegram: {error}")
+
+
 def main():
     if not TOKEN:
         raise RuntimeError(
@@ -627,6 +639,8 @@ def main():
         )
 
     application = Application.builder().token(TOKEN).build()
+
+    application.add_error_handler(error_handler)
 
     application.add_handler(
         CommandHandler("start", start)
