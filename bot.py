@@ -18,7 +18,7 @@ from telegram.ext import (
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-SHEETS_URL = "https://script.google.com/macros/s/AKfycbyeHeSge0G6V2PSUBh4Ln8rlbCTOy4oGhq0n_0Xx8W4wZBgCR1zMr7vt9T7xvXKZ8N2/exec"
+SHEETS_URL = "https://script.google.com/macros/s/AKfycbwKG2eYL2Mbb9pOj819Q2ub9e2Q2ZNp_FFPE8xrnqA253HoU8zALf4wXsMzjLQG8EDT/exec"
 
 web_app = Flask(__name__)
 
@@ -236,6 +236,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "🌷 Спасибо! Оценка завершена.\n\n"
                 "По Вашим ответам на данный момент "
                 "симптомы недержания мочи не выявлены.\n\n"
+                "Ваш результат: 0 баллов.\n\n"
                 "🟢 Результат скрининга: НИЗКИЙ РИСК.\n\n"
                 "Рекомендуется продолжать профилактику "
                 "нарушений тазового дна.\n\n"
