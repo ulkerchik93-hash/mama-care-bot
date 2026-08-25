@@ -210,12 +210,13 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("leak_"):
         context.user_data["leakage"] = data
 
-          # ЕСЛИ НИКОГДА — СРАЗУ РЕЗУЛЬТАТ
+        # ЕСЛИ НИКОГДА — СРАЗУ РЕЗУЛЬТАТ
         if data == "leak_never":
             context.user_data["completed"] = True
-            
+
             save_to_sheets({
                 "id": f"MC-{uuid.uuid4().hex[:8].upper()}",
+                "telegram_id": query.from_user.id,
                 "age": context.user_data.get("age", ""),
                 "delivery_year": context.user_data.get("delivery_year", ""),
                 "births": context.user_data.get("births", ""),
@@ -276,7 +277,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ])
         )
         return
-
     # СИТУАЦИЯ ПОДТЕКАНИЯ
     if data.startswith("situation_"):
         context.user_data["leak_situation"] = data
@@ -482,6 +482,7 @@ async def show_result(query, context):
 
     save_to_sheets({
         "id": f"MC-{uuid.uuid4().hex[:8].upper()}",
+        "telegram_id": query.from_user.id,
         "age": context.user_data.get("age", ""),
         "delivery_year": context.user_data.get("delivery_year", ""),
         "births": context.user_data.get("births", ""),
